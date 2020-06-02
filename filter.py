@@ -8,11 +8,9 @@ from PIL import ImageTk
 from tkinter.filedialog import askopenfilename, asksaveasfilename
 import tkinter.messagebox as tmsg
 import cv2
-path="/home/aditya/Desktop/filters/Aditya R H.jpg"
+
 panelA=None
 panelB=None
-panelC=None
-panelD=None
 converted=None
 
 
@@ -22,35 +20,42 @@ def help1():
 
 def filename():
     global f
-    f=askopenfilename(title="Select Your Image",filetypes=[("Image files","*.png"),("Image files","*.jpg"),("Image files","*.jpeg")])
+    f=askopenfilename(title="Select Your Image",filetypes=[("Image files","*.png"),("Image files","*.jpg"),("Image files","*.jpeg")],initialdir = "/home/aditya/Desktop/filters/Images")
     if f== "":
         f=None
 
         
 
-def getfilepath():
-    return f
+def toggleFullScreen(event):
+    global fullScreenState
+    fullScreenState=not fullScreenState
+    root.attributes("-fullscreen",fullScreenState)
+
+def quitFullScreen(event):
+    fullScreenState=False
+    root.attributes("-fullscreen",fullScreenState)
 
 
 def save1():
-    file_name=asksaveasfilename(initialdir = "/home/aditya/Desktop/filters",title = "Select file",filetypes = (('JPEG', ('*.jpg','*.jpeg','*.jpe','*.jfif')),('PNG', '*.png'),('BMP', ('*.bmp','*.jdib')),('GIF', '*.gif')))
-    if file_name==None:
-        return
+    if converted==None:
+        tmsg.showerror("No Filter Applied")
     else:
-        converted.save(file_name)
+        file_name=asksaveasfilename(initialdir = "/home/aditya/Desktop/filters/Converted Images",title = "Select file",initialfile = 'Untitled.jpg', defaultextension=".jpg",filetypes = (('JPEG', ('*.jpg','*.jpeg','*.jpe','*.jfif')),('PNG', '*.png'),('BMP', ('*.bmp','*.jdib')),('GIF', '*.gif')))
+        if file_name==None:
+            tmsg.showerror("Name not entered","Please enter name to save image")
+        else:
+            converted.save(file_name)
 
 def printimage(image,edged):
     global panelB,panelA,panelC,panelD
     ph1 = ImageTk.PhotoImage(image)
     ph2 = ImageTk.PhotoImage(edged)
     if panelA is None or panelB is None:
-            #panelC=Label(text="original image")
-            #panelC.pack(side="top",padx=0)
+            
             panelA = Label(text="Original Image",image=ph1,compound="center")
             panelA.image = ph1
             panelA.pack(side="left", padx=10, pady=20)
-            #panelD=Label(text="Filtered image")
-            #panelD.pack(side="top")
+            
             panelB = Label(text="Filtered Image",image=ph2,compound="center")
             panelB.image = ph2
             panelB.pack(side="right", padx=10, pady=20)
@@ -63,18 +68,8 @@ def printimage(image,edged):
 
 
 class PencilSketch:
-    """Pencil sketch effect
-        A class that applies a pencil sketch effect to an image.
-        The processed image is overlayed over a background image for visual
-        effect.
-    """
 
-    def __init__(self,bg_gray='home/aditya/Desktop/filters/pencilsketch_bg.jpg'):
-        """Initialize parameters
-            :param (width, height): Image size.
-            :param bg_gray: Optional background image to improve the illusion
-                            that the pencil sketch was drawn on a canvas.
-        """
+    def __init__(self,bg_gray='home/aditya/Desktop/filters/Images/pencilsketch_bg.jpg'):
         self.width = 964
         self.height = 964
 
@@ -84,11 +79,6 @@ class PencilSketch:
             self.canvas = cv2.resize(self.canvas, (self.width, self.height))
 
     def render(self):
-        """Applies pencil sketch effect to an RGB image
-            :param img_rgb: RGB image to be processed
-            :returns: Processed RGB image
-        """
-        # print(getfilepath())
         if f=="":
             help1()
         else:
@@ -111,12 +101,6 @@ class PencilSketch:
         
         
 class WarmingFilter:
-    """Warming filter
-        A class that applies a warming filter to an image.
-        The class uses curve filters to manipulate the perceived color
-        temparature of an image. The warming filter will shift the image's
-        color spectrum towards red, away from blue.
-    """
 
     def __init__(self):
         """Initialize look-up table for curve filter"""
@@ -126,10 +110,7 @@ class WarmingFilter:
         self.decr_ch_lut = self._create_LUT_8UC1([0, 64, 128, 192, 256],
                                                  [0, 30,  80, 120, 192])
     def render(self):
-        """Applies warming filter to an RGB image
-            :param img_rgb: RGB image to be processed
-            :returns: Processed RGB image
-        """
+       
         # warming filter: increase red, decrease blue
 
         if f=="":
@@ -154,19 +135,11 @@ class WarmingFilter:
             printimage(real_image,converted)
 
     def _create_LUT_8UC1(self, x, y):
-        """Creates a look-up table using scipy's spline interpolation"""
         spl = UnivariateSpline(x, y)
         return spl(range(256))
 
 
 class CoolingFilter:
-    """Cooling filter
-        A class that applies a cooling filter to an image.
-        The class uses curve filters to manipulate the perceived color
-        temparature of an image. The warming filter will shift the image's
-        color spectrum towards blue, away from red.
-    """
-
     def __init__(self):
         """Initialize look-up table for curve filter"""
         # create look-up tables for increasing and decreasing a channel
@@ -176,10 +149,7 @@ class CoolingFilter:
                                                  [0, 30,  80, 120, 192])
 
     def render(self):
-        """Applies pencil sketch effect to an RGB image
-            :param img_rgb: RGB image to be processed
-            :returns: Processed RGB image
-        """
+        
 
         if f=="":
             help1()
@@ -212,11 +182,8 @@ class CoolingFilter:
 
 
 class Cartoonizer:
-    """Cartoonizer effect
-        A class that applies a cartoon effect to an image.
-        The class uses a bilateral filter and adaptive thresholding to create
-        a cartoon effect.
-    """
+   
+
 
     def __init__(self):
         pass
@@ -280,13 +247,20 @@ class Cartoonizer:
 
 
 f=""
-
+fullScreenState=False
 # initialize the window toolkit along with the two image panels
 root = Tk()
 root.geometry("600x400")
 root.title("Different types of filters")
+root.attributes('-fullscreen',True)
+
 root.configure(bg="orange red")
-root.iconphoto(True, PhotoImage(file="/home/aditya/Desktop/filters/filter.png"))
+root.iconphoto(True, PhotoImage(file="/home/aditya/Desktop/filters/Images/filter.png"))
+root.bind("<F11>",toggleFullScreen)
+root.bind("<Escape>",quitFullScreen)
+
+
+
 text=Label(root,text="Welcome",font="Helvetica 40 bold underline",bg="orange red",fg="gold",pady=30)
 text.pack()
 # create a button, then when pressed, will trigger a file chooser
