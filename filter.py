@@ -247,12 +247,12 @@ class Cartoonizer:
 
 
 f=""
-fullScreenState=False
+fullScreenState=True
 # initialize the window toolkit along with the two image panels
 root = Tk()
 root.geometry("600x400")
 root.title("Different types of filters")
-root.attributes('-fullscreen',True)
+root.attributes('-fullscreen',False)
 
 root.configure(bg="orange red")
 root.iconphoto(True, PhotoImage(file="/home/aditya/Desktop/filters/Images/filter.png"))
